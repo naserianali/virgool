@@ -1,21 +1,13 @@
 import { Column, Entity } from "typeorm";
 import { EntityEnum } from "../../../common/enums/entity.enum";
-import { BaseEntity } from '../../../common/abstracts/base.entity';
+import { BaseEntity } from "../../../common/abstracts/base.entity";
 
-@Entity(EntityEnum.Profiles)
-export class ProfileEntity extends BaseEntity {
+@Entity(EntityEnum.Otp)
+export class OtpEntity extends BaseEntity {
   @Column()
-  nickname: string;
-  @Column({ nullable: true })
-  bio: string;
-  @Column({ nullable: true })
-  image: string;
-  @Column({ nullable: true })
-  bgImage: string;
-  @Column({ nullable: true })
-  gender: string;
-  @Column({ nullable: true })
-  birthday: Date;
-  @Column({ nullable: true })
-  linkedInProfile: string;
+  code: string;
+  @Column()
+  expiredAt: Date;
+  @Column()
+  username: string;
 }

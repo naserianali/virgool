@@ -12,6 +12,5 @@ export function TypeormConfig(): TypeOrmModuleOptions {
     database: DB_NAME,
     synchronize: true,
     entities: ["dist/**/*.entity{.ts,.js}"],
-
   };
 }
