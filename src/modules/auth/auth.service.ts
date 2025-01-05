@@ -41,19 +41,32 @@ export class AuthService {
     username = this.validateUsername(method, username);
     const user: UserEntity = await this.checkExistUser(method, username);
     if (!user) throw new BadRequestException("user not found");
+    return this.sendOtp(method, username);
   }
 
   async register(method: AuthMethod, username: string) {
     username = this.validateUsername(method, username);
-    const user: UserEntity = await this.checkExistUser(method, username);
-    if (user) throw new ConflictException("user already exists");
+    let user: UserEntity = await this.checkExistUser(method, username);
+    if ((!!user)) throw new ConflictException("user already exists");
+    if (method === AuthMethod.Username)
+      throw new BadRequestException("user name not allow on registration");
+    const otp = await this.sendOtp(method, username);
+    user = this.userRepository.create({
+      [method.toLowerCase()]: username,
+      username,
+    });
+    user = await this.userRepository.save(user);
+    return {
+      user: user,
+      otp: otp.code,
+    };
   }
 
   async checkExistUser(method: AuthMethod, username: string) {
     if (method === AuthMethod.Phone)
       return await this.userRepository.findOneBy({ phone: username });
     else if (method === AuthMethod.Email)
-      return await this.userRepository.findOneBy({ phone: username });
+      return await this.userRepository.findOneBy({ email: username });
     else if (method === AuthMethod.Username)
       return await this.userRepository.findOneBy({ username });
     else throw new BadRequestException("the login values is not valid.");
@@ -87,9 +100,10 @@ export class AuthService {
         expiredAt,
       });
     }
-    otp = await this.profileRepository.save(otp);
+    otp = await this.otpRepository.save(otp);
     return {
       message: "code sent successfully",
+      code: otp.code,
     };
   }
 }
