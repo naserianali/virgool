@@ -8,5 +8,8 @@ declare namespace NodeJS {
     DB_HOST: string;
     COOKIE_SECRET: string;
     OTP_TOKEN_SECRET: string;
+    ACCESS_TOKEN_SECRET: string;
+
+
   }
 }
