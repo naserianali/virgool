@@ -156,6 +156,7 @@ export class AuthService {
     const { code } = otpDto;
     if (!token) throw new UnauthorizedException("token expired");
     const payload = this.tokenService.verifyOtpToken(token);
+    console.log(payload.method);
     const otp = await this.otpRepository.findOneBy({
       username: payload.username,
     });
