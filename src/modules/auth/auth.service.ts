@@ -156,7 +156,6 @@ export class AuthService {
     const { code } = otpDto;
     if (!token) throw new UnauthorizedException("token expired");
     const payload = this.tokenService.verifyOtpToken(token);
-    console.log(payload.method);
     const otp = await this.otpRepository.findOneBy({
       username: payload.username,
     });
@@ -166,6 +165,20 @@ export class AuthService {
     const accessToken = await this.tokenService.generateAccessToken({
       userId: payload.userId,
     });
+    if (payload.method === AuthMethod.Email)
+      await this.userRepository.update(
+        { id: payload.userId },
+        {
+          verifiedEmail: true,
+        },
+      );
+    if (payload.method === AuthMethod.Phone)
+      await this.userRepository.update(
+        { id: payload.userId },
+        {
+          verifiedPhone: true,
+        },
+      );
     await this.otpRepository.remove(otp);
     return {
       message: "login successfully",

@@ -6,4 +6,14 @@ export type CookiePayloadType = {
   userId: string;
 };
 
-export type AccessTokenPayloadType = Pick<CookiePayloadType, 'userId'>
+export type AccessTokenPayloadType = Pick<CookiePayloadType, "userId">;
+
+export type EmailTokenPayloadType = {
+  email: string;
+  method: AuthMethod;
+};
+
+export type PhoneTokenPayloadType = {
+  phone: string;
+  method: AuthMethod;
+};
