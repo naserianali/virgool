@@ -1,7 +1,10 @@
-import { Column, Entity, OneToOne } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { EntityEnum } from "../../../common/enums/entity.enum";
 import { BaseEntity } from "../../../common/abstracts/base.entity";
 import { ProfileEntity } from "./profile.entity";
+import { BlogEntity } from "../../blog/entities/blog.entity";
+import { BlogLikeEntity } from "../../blog/entities/blog-like.entity";
+import { BlogBookmarkEntity } from '../../blog/entities/blog-bookmark.entity';
 
 @Entity(EntityEnum.Users)
 export class UserEntity extends BaseEntity {
@@ -19,4 +22,12 @@ export class UserEntity extends BaseEntity {
   verifiedEmail: boolean;
   @Column({ default: false })
   verifiedPhone: boolean;
+  @OneToMany(() => BlogEntity, (blog) => blog.author)
+  blogs: BlogEntity[];
+  @OneToMany(() => BlogLikeEntity, (like) => like.user, { nullable: true })
+  blogLikes: BlogLikeEntity[];
+  @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.user, {
+    nullable: true,
+  })
+  bookmarks: BlogBookmarkEntity[];
 }
