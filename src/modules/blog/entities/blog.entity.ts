@@ -5,6 +5,7 @@ import { BlogStatus } from "../emum/status.enum";
 import { UserEntity } from "../../user/entities/user.entity";
 import { BlogLikeEntity } from "./blog-like.entity";
 import { BlogBookmarkEntity } from "./blog-bookmark.entity";
+import { BlogCommentEntity } from './blog-commnets.entity';
 
 @Entity(EntityEnum.Blog)
 export class BlogEntity extends BaseEntity {
@@ -28,4 +29,8 @@ export class BlogEntity extends BaseEntity {
     nullable: true,
   })
   bookmarks: BlogBookmarkEntity[];
+  @OneToMany(()=> BlogCommentEntity , (comment) => comment.blog, {
+    nullable: true,
+  })
+  comments: BlogCommentEntity[];
 }
