@@ -25,6 +25,14 @@ export class CategoryService {
         }
     }
 
+    async insetByTitle(title: string) {
+        const category = this.categoryRepository.create({
+            title,
+            priority: null,
+        });
+        return await this.categoryRepository.save(category);
+    }
+
     async checkIfTitleExists(title: string) {
         title = title.trim().toLowerCase();
         const category = await this.categoryRepository.findOneBy({title});
@@ -50,6 +58,10 @@ export class CategoryService {
         const category = await this.categoryRepository.findOneBy({id});
         if (!category) throw new NotFoundException("category not found");
         return category;
+    }
+
+    async findOneByTitle(title: string) {
+        return await this.categoryRepository.findOneBy({title});
     }
 
     async update(id: string, updateCategoryDto: UpdateCategoryDto) {

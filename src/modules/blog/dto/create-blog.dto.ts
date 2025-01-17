@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsOptional, IsString, Length} from "class-validator";
+import {IsArray, IsNotEmpty, IsOptional, IsString, Length} from "class-validator";
 import {ApiProperty, ApiPropertyOptional} from "@nestjs/swagger";
 
 export class CreateBlogDto {
@@ -29,4 +29,13 @@ export class CreateBlogDto {
     @IsNotEmpty()
     @IsString()
     studyTime: string
+    @ApiProperty({type: String, isArray: true})
+    @IsNotEmpty()
+    @IsArray()
+    categories: string[]
+}
+
+export class BlogFilterDto {
+    search: string
+    category: string
 }

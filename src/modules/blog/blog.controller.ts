@@ -1,9 +1,12 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards} from '@nestjs/common';
+import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseUUIDPipe} from '@nestjs/common';
 import {BlogService} from './blog.service';
-import {CreateBlogDto} from './dto/create-blog.dto';
+import {BlogFilterDto, CreateBlogDto} from './dto/create-blog.dto';
 import {UpdateBlogDto} from './dto/update-blog.dto';
 import {AuthGuard} from "../auth/guards/auth/auth.guard";
 import {ApiBearerAuth} from "@nestjs/swagger";
+import {Pagination} from "../../common/decorators/pagination.decrator";
+import {SkipAuth} from "../../common/decorators/skip-auth.decorator";
+import {PaginationDto} from "../../common/dto/pagination.dto";
 
 @Controller('blog')
 @UseGuards(AuthGuard)
@@ -18,8 +21,15 @@ export class BlogController {
     }
 
     @Get()
-    findAll() {
-        return this.blogService.findAll();
+    @Pagination()
+    @SkipAuth()
+    findAll(@Query() paginationDto: PaginationDto, @Query() filter: BlogFilterDto) {
+        return this.blogService.findAll(paginationDto, filter);
+    }
+
+    @Get('/my')
+    getMyBlogs() {
+        return this.blogService.getMyBlogs()
     }
 
     @Get(':id')
@@ -33,7 +43,7 @@ export class BlogController {
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.blogService.remove(+id);
+    remove(@Param('id', ParseUUIDPipe) id: string) {
+        return this.blogService.remove(id);
     }
 }

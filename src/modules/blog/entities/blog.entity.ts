@@ -6,6 +6,7 @@ import {UserEntity} from "../../user/entities/user.entity";
 import {BlogLikeEntity} from "./blog-like.entity";
 import {BlogBookmarkEntity} from "./blog-bookmark.entity";
 import {BlogCommentEntity} from './blog-commnets.entity';
+import {BlogCategoryEntity} from "./blog-category.entity";
 
 @Entity(EntityEnum.Blog)
 export class BlogEntity extends BaseEntity {
@@ -37,4 +38,8 @@ export class BlogEntity extends BaseEntity {
         nullable: true,
     })
     comments: BlogCommentEntity[];
+    @OneToMany(() => BlogCategoryEntity, (category) => category.blog, {
+        nullable: true,
+    })
+    categories: BlogCategoryEntity[];
 }
