@@ -1,4 +1,4 @@
-import {BadRequestException, Inject, Injectable, Scope} from '@nestjs/common';
+import {BadRequestException, Inject, Injectable, NotFoundException, Scope} from '@nestjs/common';
 import {BlogFilterDto, CreateBlogDto} from './dto/create-blog.dto';
 import {UpdateBlogDto} from './dto/update-blog.dto';
 import {InjectRepository} from "@nestjs/typeorm";
@@ -13,6 +13,8 @@ import {isArray} from "class-validator";
 import {CategoryService} from "../category/category.service";
 import {BlogCategoryEntity} from "./entities/blog-category.entity";
 import {EntityEnum} from "../../common/enums/entity.enum";
+import {join} from "path";
+import {existsSync, unlinkSync} from "fs";
 
 @Injectable({scope: Scope.REQUEST})
 export class BlogService {
@@ -31,8 +33,8 @@ export class BlogService {
         }
         const user = this.request.user;
         slug = createSlug(slug ?? title);
-        const isExists = this.findBlogBySlug(slug);
-        if (isExists) slug += `-${randomId()}`
+        const isExists = await this.findBlogBySlug(slug);
+        if (!!isExists) slug += `-${randomId()}`
         let blog = this.blogRepository.create({
             title,
             slug,
@@ -101,8 +103,45 @@ export class BlogService {
         return `This action returns a #${id} blog`;
     }
 
-    update(id: number, updateBlogDto: UpdateBlogDto) {
-        return `This action updates a #${id} blog`;
+    async findOneById(id: string) {
+        return await this.blogRepository.findOneBy({id})
+    }
+
+    async update(id: string, updateBlogDto: UpdateBlogDto) {
+        let {content, description, studyTime, image, categories, title, slug} = updateBlogDto;
+        const blog = await this.findOneById(id);
+        if (!blog) throw new NotFoundException("blog not found");
+        if (blog.id !== id && slug === blog.slug) slug = createSlug(slug ?? title) + `-${randomId()}`;
+        if (blog.id === id && slug !== blog.slug) blog.slug = createSlug(slug ?? title);
+        if (title) blog.title = title;
+        if (categories && categories.length > 0) {
+            await this.blogCategoryRepository.delete({
+                blogId: blog.id,
+            });
+            for (const categoryTitle of categories) {
+                let category = await this.categoryService.findOneByTitle(categoryTitle);
+                if (!category)
+                    category = await this.categoryService.insetByTitle(categoryTitle);
+                await this.blogCategoryRepository.insert({
+                    blogId: blog.id,
+                    categoryId: category.id,
+                })
+            }
+        }
+        if (content) blog.content = content;
+        if (description) blog.description = description;
+        if (studyTime) blog.studyTime = studyTime;
+        if (image) {
+            if (blog?.image?.length > 0) {
+                let dirname = join('public', blog.image);
+                if (existsSync(dirname)) unlinkSync(dirname);
+            }
+            blog.image = image
+        }
+        await this.blogRepository.save(blog);
+        return {
+            message: "Blog Updated Successfully"
+        }
     }
 
     async remove(id: string) {
@@ -115,7 +154,6 @@ export class BlogService {
     }
 
     async findBlogBySlug(slug: string) {
-        const blog = await this.blogRepository.findOneBy({slug})
-        return !!blog;
+        return await this.blogRepository.findOneBy({slug})
     }
 }
