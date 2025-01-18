@@ -5,27 +5,31 @@ import {
   NotFoundException,
   Scope,
 } from "@nestjs/common";
-import { BlogFilterDto, CreateBlogDto } from "./dto/create-blog.dto";
-import { UpdateBlogDto } from "./dto/update-blog.dto";
+import {
+  BlogCommentDto,
+  BlogFilterDto,
+  CreateBlogDto,
+} from "../dto/create-blog.dto";
+import { UpdateBlogDto } from "../dto/update-blog.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { BlogEntity } from "./entities/blog.entity";
+import { BlogEntity } from "../entities/blog.entity";
 import { Repository } from "typeorm";
-import { createSlug, randomId } from "../../common/untils/functions";
+import { createSlug, randomId } from "../../../common/untils/functions";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
-import { PaginationDto } from "../../common/dto/pagination.dto";
+import { PaginationDto } from "../../../common/dto/pagination.dto";
 import {
   Pagination,
   PaginationGenerator,
-} from "../../common/untils/pagination";
+} from "../../../common/untils/pagination";
 import { isArray } from "class-validator";
-import { CategoryService } from "../category/category.service";
-import { BlogCategoryEntity } from "./entities/blog-category.entity";
-import { EntityEnum } from "../../common/enums/entity.enum";
+import { CategoryService } from "../../category/category.service";
+import { BlogCategoryEntity } from "../entities/blog-category.entity";
+import { EntityEnum } from "../../../common/enums/entity.enum";
 import { join } from "path";
 import { existsSync, unlinkSync } from "fs";
-import { BlogLikeEntity } from "./entities/blog-like.entity";
-import { BlogBookmarkEntity } from "./entities/blog-bookmark.entity";
+import { BlogLikeEntity } from "../entities/blog-like.entity";
+import { BlogBookmarkEntity } from "../entities/blog-bookmark.entity";
 
 @Injectable({ scope: Scope.REQUEST })
 export class BlogService {
@@ -125,10 +129,6 @@ export class BlogService {
       pagination: PaginationGenerator(count, page, perPage),
       blogs,
     };
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} blog`;
   }
 
   async findOneById(id: string) {
