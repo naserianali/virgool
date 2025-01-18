@@ -4,7 +4,7 @@ import {BlogFilterDto, CreateBlogDto} from './dto/create-blog.dto';
 import {UpdateBlogDto} from './dto/update-blog.dto';
 import {AuthGuard} from "../auth/guards/auth/auth.guard";
 import {ApiBearerAuth} from "@nestjs/swagger";
-import {Pagination} from "../../common/decorators/pagination.decrator";
+import {Pagination} from "../../common/decorators/pagination.decorator";
 import {SkipAuth} from "../../common/decorators/skip-auth.decorator";
 import {PaginationDto} from "../../common/dto/pagination.dto";
 

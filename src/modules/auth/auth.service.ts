@@ -18,7 +18,7 @@ import { OtpEntity } from "../user/entities/otp.entity";
 import * as crypto from "node:crypto";
 import { TokenService } from "./token.service";
 import { Request, Response } from "express";
-import { CookiesKey } from "../../common/enums/cookei.enum";
+import { CookiesKey } from "../../common/enums/cookie.enum";
 import { AuthResponse } from "./types/response";
 import { REQUEST } from "@nestjs/core";
 

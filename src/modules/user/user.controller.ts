@@ -27,7 +27,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { MulterStorage } from "../../common/untils/multer.utils";
 import { AuthGuard } from "../auth/guards/auth/auth.guard";
 import { Response } from "express";
-import { CookiesKey } from "../../common/enums/cookei.enum";
+import { CookiesKey } from "../../common/enums/cookie.enum";
 import { OtpDto } from "../auth/dto/auth.dto";
 import { AuthMethod } from "../auth/enums/method.enum";
 
