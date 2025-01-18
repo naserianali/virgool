@@ -51,6 +51,12 @@ export class BlogController {
     return this.blogService.myBookmarks();
   }
 
+  @Get("/:slug")
+  @SkipAuth()
+  getOneBySlug(@Param("slug") slug: string) {
+    return this.blogService.finOneBySlug(slug);
+  }
+
   @Put(":id")
   update(
     @Param("id", ParseUUIDPipe) id: string,

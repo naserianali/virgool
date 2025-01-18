@@ -256,4 +256,34 @@ export class BlogService {
       },
     });
   }
+
+  async finOneBySlug(slug: string) {
+    const userId = this?.request?.user?.id;
+    let blog = await this.blogRepository
+      .createQueryBuilder(EntityEnum.Blog)
+      .leftJoin("blogs.categories", "categories")
+      .leftJoin("categories.category", "category")
+      .loadRelationCountAndMap("blogs.likes", "blogs.likes")
+      .loadRelationCountAndMap("blogs.bookmarks", "blogs.bookmarks")
+      .where({ slug })
+      .loadRelationCountAndMap(
+        "blogs.comments",
+        "blogs.comments",
+        "comments",
+        (qb) => qb.where("comments.accepted = :accepted", { accepted: true }),
+      )
+      .getOne();
+    if (!blog) throw new NotFoundException("Blog not found");
+    const like = await this.blogLikeRepository.findOneBy({
+      blogId: blog.id,
+      userId: userId,
+    });
+    let bookmark = await this.blogBookmarkRepository.findOneBy({
+      blogId: blog.id,
+      userId: userId,
+    });
+    let isBookmarked = bookmark ? bookmark?.userId === userId : false;
+    let isLiked = like ? like?.userId === userId : false;
+    return { isLiked, isBookmarked, ...blog };
+  }
 }
