@@ -114,6 +114,12 @@ export class BlogService {
       .leftJoin("blogs.author", "author")
       .leftJoin("author.profile", "profile")
       .loadRelationCountAndMap("blogs.likes", "blogs.likes")
+      .loadRelationCountAndMap(
+        "blogs.comments",
+        "blogs.comments",
+        "comments",
+        (qb) => qb.where("comments.accepted = :accepted", { accepted: true }),
+      )
       .where(where, { category, search })
       .addSelect([
         "category.title",

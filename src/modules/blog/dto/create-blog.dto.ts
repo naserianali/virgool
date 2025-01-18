@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -64,4 +65,11 @@ export class BlogCommentDto {
   @IsNotEmpty()
   @IsString()
   blogId: string;
+}
+
+export class CommentStatusDto {
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  status: boolean;
 }

@@ -7,6 +7,11 @@ import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { BlogService } from "./blog.service";
 import { BlogCommentDto } from "../dto/create-blog.dto";
+import { PaginationDto } from "../../../common/dto/pagination.dto";
+import {
+  Pagination,
+  PaginationGenerator,
+} from "../../../common/untils/pagination";
 
 @Injectable({ scope: Scope.REQUEST })
 export class BlogCommentService {
@@ -36,6 +41,53 @@ export class BlogCommentService {
     });
     return {
       message: "comment created successfully",
+    };
+  }
+
+  async commentList(paginationDto: PaginationDto) {
+    const { page, perPage, skip } = Pagination(paginationDto);
+    const [comments, count] = await this.commentRepository.findAndCount({
+      where: {},
+      skip,
+      take: perPage,
+      relations: {
+        blog: true,
+        user: {
+          profile: true,
+        },
+      },
+      select: {
+        blog: {
+          title: true,
+        },
+        user: {
+          username: true,
+          profile: {
+            nickname: true,
+          },
+        },
+      },
+      order: {
+        createdAt: "DESC",
+      },
+    });
+    return {
+      pagination: PaginationGenerator(count, page, perPage),
+      comments,
+    };
+  }
+
+  async findCommentById(id: string) {
+    return await this.commentRepository.findOneBy({ id });
+  }
+
+  async commentStatus(id: string) {
+    const comment = await this.findCommentById(id);
+    if (!comment) throw new NotFoundException("Comment not found");
+    comment.accepted = !comment.accepted;
+    await this.commentRepository.save(comment);
+    return {
+      message: "comment status Updated",
     };
   }
 }
