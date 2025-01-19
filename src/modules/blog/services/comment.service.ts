@@ -1,7 +1,13 @@
-import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BlogEntity } from "../entities/blog.entity";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { BlogCommentEntity } from "../entities/blog-commnets.entity";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
@@ -21,6 +27,7 @@ export class BlogCommentService {
     @InjectRepository(BlogCommentEntity)
     private commentRepository: Repository<BlogCommentEntity>,
     @Inject(REQUEST) private request: Request,
+    @Inject(forwardRef(() => BlogService))
     private blogService: BlogService,
   ) {}
 
@@ -88,6 +95,58 @@ export class BlogCommentService {
     await this.commentRepository.save(comment);
     return {
       message: "comment status Updated",
+    };
+  }
+
+  async blogComments(id: string, paginationDto: PaginationDto) {
+    const { page, perPage, skip } = Pagination(paginationDto);
+    const [comments, count] = await this.commentRepository.findAndCount({
+      where: {
+        blogId: id,
+        parentId: IsNull(),
+      },
+      skip,
+      take: perPage,
+      relations: {
+        user: {
+          profile: true,
+        },
+        children: {
+          user: {
+            profile: true,
+          },
+          children: {
+            user: {
+              profile: true,
+            },
+          },
+        },
+      },
+      select: {
+        children: {
+          id: true,
+          text: true,
+          user: {
+            username: true,
+            profile: {
+              nickname: true,
+            },
+          },
+          children: {
+            text: true,
+            user: {
+              username: true,
+              profile: {
+                nickname: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return {
+      pagination: PaginationGenerator(count, page, perPage),
+      comments,
     };
   }
 }

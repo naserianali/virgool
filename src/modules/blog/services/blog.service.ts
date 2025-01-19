@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -30,6 +31,7 @@ import { join } from "path";
 import { existsSync, unlinkSync } from "fs";
 import { BlogLikeEntity } from "../entities/blog-like.entity";
 import { BlogBookmarkEntity } from "../entities/blog-bookmark.entity";
+import { BlogCommentService } from "./comment.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class BlogService {
@@ -44,6 +46,7 @@ export class BlogService {
     private blogBookmarkRepository: Repository<BlogBookmarkEntity>,
     @Inject(REQUEST) private request: Request,
     private categoryService: CategoryService,
+    private blogCommentService: BlogCommentService,
   ) {}
 
   async create(createBlogDto: CreateBlogDto) {
@@ -257,33 +260,47 @@ export class BlogService {
     });
   }
 
-  async finOneBySlug(slug: string) {
+  async finOneBySlug(slug: string, paginationDto: PaginationDto) {
     const userId = this?.request?.user?.id;
     let blog = await this.blogRepository
       .createQueryBuilder(EntityEnum.Blog)
+      .where("blogs.slug = :slug", { slug })
       .leftJoin("blogs.categories", "categories")
       .leftJoin("categories.category", "category")
       .loadRelationCountAndMap("blogs.likes", "blogs.likes")
       .loadRelationCountAndMap("blogs.bookmarks", "blogs.bookmarks")
-      .where({ slug })
       .loadRelationCountAndMap(
+        "blogs.comments_count",
         "blogs.comments",
-        "blogs.comments",
-        "comments",
-        (qb) => qb.where("comments.accepted = :accepted", { accepted: true }),
+        "comments_count",
+        (qb) =>
+          qb.where("comments_count.accepted = :accepted", { accepted: true }),
       )
       .getOne();
     if (!blog) throw new NotFoundException("Blog not found");
-    const like = await this.blogLikeRepository.findOneBy({
-      blogId: blog.id,
-      userId: userId,
-    });
-    let bookmark = await this.blogBookmarkRepository.findOneBy({
-      blogId: blog.id,
-      userId: userId,
-    });
-    let isBookmarked = bookmark ? bookmark?.userId === userId : false;
-    let isLiked = like ? like?.userId === userId : false;
-    return { isLiked, isBookmarked, ...blog };
+    const isLiked = !!(await this.blogLikeRepository
+      .createQueryBuilder(EntityEnum.BlogLike)
+      .where({
+        blogId: blog.id,
+        userId,
+      })
+      .getOne());
+    let isBookmarked = !!(await this.blogBookmarkRepository
+      .createQueryBuilder(EntityEnum.BlogBookmark)
+      .where({
+        blogId: blog.id,
+        userId,
+      })
+      .getOne());
+    const comments = await this.blogCommentService.blogComments(
+      blog.id,
+      paginationDto,
+    );
+    return {
+      isLiked,
+      isBookmarked,
+      ...blog,
+      comments: { ...comments },
+    };
   }
 }

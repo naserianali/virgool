@@ -53,8 +53,12 @@ export class BlogController {
 
   @Get("/:slug")
   @SkipAuth()
-  getOneBySlug(@Param("slug") slug: string) {
-    return this.blogService.finOneBySlug(slug);
+  @Pagination()
+  getOneBySlug(
+    @Param("slug") slug: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.blogService.finOneBySlug(slug , paginationDto);
   }
 
   @Put(":id")
