@@ -11,8 +11,6 @@ import {
   EmailTokenPayloadType,
   PhoneTokenPayloadType,
 } from "./types/payload";
-import { OtpDto } from "./dto/auth.dto";
-import { AuthMethod } from "./enums/method.enum";
 
 @Injectable()
 export class TokenService {
@@ -38,7 +36,7 @@ export class TokenService {
 
   async generateAccessToken(payload: AccessTokenPayloadType) {
     const { ACCESS_TOKEN_SECRET } = process.env;
-    console.log(payload, ACCESS_TOKEN_SECRET);
+    /*console.log(payload, ACCESS_TOKEN_SECRET);*/
     return this.jwtService.sign(payload, {
       secret: ACCESS_TOKEN_SECRET,
       expiresIn: "1y",
