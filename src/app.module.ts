@@ -8,6 +8,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { ImageModule } from './modules/image/image.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { BlogModule } from './modules/blog/blog.module';
     UserModule,
     AuthModule,
     CategoryModule,
-    BlogModule
+    BlogModule,
+    ImageModule
   ],
   controllers: [],
   providers: [],

@@ -5,7 +5,7 @@ import {UpdateCategoryDto} from './dto/update-category.dto';
 import {ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags} from "@nestjs/swagger";
 import {SwaggerConsumerEnum} from "../auth/enums/swagger.consumer.enum";
 import {PaginationDto} from "../../common/dto/pagination.dto";
-import {Pagination} from "../../common/decorators/pagination.decrator";
+import {Pagination} from "../../common/decorators/pagination.decorator";
 
 @Controller('category')
 @ApiTags('Category')
