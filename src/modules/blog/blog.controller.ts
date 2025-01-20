@@ -1,13 +1,11 @@
 import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseUUIDPipe, Put} from '@nestjs/common';
-import {BlogService} from './blog.service';
 import {BlogFilterDto, CreateBlogDto} from './dto/create-blog.dto';
 import {UpdateBlogDto} from './dto/update-blog.dto';
-import {AuthGuard} from "../auth/guards/auth/auth.guard";
-import {ApiBearerAuth} from "@nestjs/swagger";
 import {Pagination} from "../../common/decorators/pagination.decorator";
 import {SkipAuth} from "../../common/decorators/skip-auth.decorator";
 import {PaginationDto} from "../../common/dto/pagination.dto";
 import {AuthDecorator} from "../../common/decorators/auth.decorator";
+import {BlogService} from "./services/blog.service";
 
 @Controller('blog')
 @AuthDecorator()
@@ -30,11 +28,6 @@ export class BlogController {
     @Get('/my')
     getMyBlogs() {
         return this.blogService.getMyBlogs()
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.blogService.findOne(+id);
     }
 
     @Put(':id')
