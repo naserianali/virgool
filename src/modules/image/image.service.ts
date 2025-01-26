@@ -56,18 +56,18 @@ export class ImageService {
     async update(id: string, updateImageDto: UpdateImageDto, image: MulterFile) {
         const {name, alt} = updateImageDto
         const existImage = await this.findOne(id);
-        if (existImage.location.length > 0) {
-            let dirname = join("public", existImage.location);
-            if (existsSync(dirname)) unlinkSync(dirname);
-        }
         if (name) existImage.name = name;
         if (alt) existImage.alt = alt;
         if (image) {
+            if (existImage.location.length > 0) {
+                let dirname = join("public", existImage.location);
+                if (existsSync(dirname)) unlinkSync(dirname);
+            }
             existImage.location = image.path.slice(7)
         }
         await this.imageRepository.save(existImage);
-        return{
-            message : PublicMessage.Updated
+        return {
+            message: PublicMessage.Updated
         }
     }
 
