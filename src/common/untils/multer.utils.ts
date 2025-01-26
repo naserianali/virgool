@@ -3,7 +3,6 @@ import {mkdirSync} from 'fs';
 import {join, extname} from 'path';
 import {BadRequestException} from '@nestjs/common';
 import {diskStorage, StorageEngine} from 'multer';
-import {createSlug} from "./functions";
 import * as crypto from "node:crypto";
 
 export type CallbackDestinationFunction = (
