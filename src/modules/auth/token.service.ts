@@ -36,7 +36,6 @@ export class TokenService {
 
   async generateAccessToken(payload: AccessTokenPayloadType) {
     const { ACCESS_TOKEN_SECRET } = process.env;
-    /*console.log(payload, ACCESS_TOKEN_SECRET);*/
     return this.jwtService.sign(payload, {
       secret: ACCESS_TOKEN_SECRET,
       expiresIn: "1y",

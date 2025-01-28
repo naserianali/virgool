@@ -6,23 +6,24 @@ import {
   Scope,
   UnauthorizedException,
 } from "@nestjs/common";
-import { AuthDTO, OtpDto } from "./dto/auth.dto";
-import { AuthType } from "./enums/type.enum";
-import { AuthMethod } from "./enums/method.enum";
-import { isEmail, isMobilePhone } from "class-validator";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { UserEntity } from "../user/entities/user.entity";
-import { ProfileEntity } from "../user/entities/profile.entity";
-import { OtpEntity } from "../user/entities/otp.entity";
+import {AuthDTO, OtpDto} from "./dto/auth.dto";
+import {AuthType} from "./enums/type.enum";
+import {AuthMethod} from "./enums/method.enum";
+import {isEmail, isMobilePhone} from "class-validator";
+import {InjectRepository} from "@nestjs/typeorm";
+import {Repository} from "typeorm";
+import {UserEntity} from "../user/entities/user.entity";
+import {ProfileEntity} from "../user/entities/profile.entity";
+import {OtpEntity} from "../user/entities/otp.entity";
 import * as crypto from "node:crypto";
-import { TokenService } from "./token.service";
-import { Request, Response } from "express";
-import { CookiesKey } from "../../common/enums/cookie.enum";
-import { AuthResponse } from "./types/response";
-import { REQUEST } from "@nestjs/core";
+import {TokenService} from "./token.service";
+import {Request, Response} from "express";
+import {CookiesKey} from "../../common/enums/cookie.enum";
+import {AuthResponse} from "./types/response";
+import {REQUEST} from "@nestjs/core";
+import {SmsIrService} from "../http/sms-ir/sms-ir.service";
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({scope: Scope.REQUEST})
 export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
@@ -33,10 +34,12 @@ export class AuthService {
     private readonly otpRepository: Repository<OtpEntity>,
     private tokenService: TokenService,
     @Inject(REQUEST) private request: Request,
-  ) {}
+    private smsIrService: SmsIrService
+  ) {
+  }
 
   async userExistence(authDto: AuthDTO, res: Response) {
-    const { username, type, method } = authDto;
+    const {username, type, method} = authDto;
     let result: AuthResponse;
     switch (type) {
       case AuthType.Login:
@@ -55,6 +58,9 @@ export class AuthService {
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 60 * 2),
     });
+    if (result.method === AuthMethod.Phone) {
+      await this.smsIrService.sendVerificationCode(result.username, result.code)
+    }
     res.json({
       message: "Code Send Successfully",
       token: result.token,
@@ -76,6 +82,7 @@ export class AuthService {
       token: token,
       code: otp.code,
       method: method,
+      username
     };
   }
 
@@ -100,16 +107,17 @@ export class AuthService {
       token: token,
       code: otp.code,
       method: method,
+      username
     };
   }
 
   async checkExistUser(method: AuthMethod, username: string) {
     if (method === AuthMethod.Phone)
-      return await this.userRepository.findOneBy({ phone: username });
+      return await this.userRepository.findOneBy({phone: username});
     else if (method === AuthMethod.Email)
-      return await this.userRepository.findOneBy({ email: username });
+      return await this.userRepository.findOneBy({email: username});
     else if (method === AuthMethod.Username)
-      return await this.userRepository.findOneBy({ username });
+      return await this.userRepository.findOneBy({username});
     else throw new BadRequestException("the login values is not valid.");
   }
 
@@ -130,10 +138,10 @@ export class AuthService {
   async sendOtp(method: AuthMethod, username: string) {
     const code = crypto.randomInt(10000, 99999).toString();
     const expiredAt = new Date(Date.now() + 1000 * 60 * 2);
-    let otp = await this.otpRepository.findOneBy({ username });
+    let otp = await this.otpRepository.findOneBy({username});
     if (otp) {
-      if (otp.expiredAt > new Date())
-        throw new UnauthorizedException("Token expire time is still on ");
+      /*  if (otp.expiredAt > new Date())
+          throw new UnauthorizedException("Token expire time is still on ");*/
       otp.code = code;
       otp.expiredAt = expiredAt;
     } else {
@@ -153,7 +161,7 @@ export class AuthService {
 
   async checkOtp(otpDto: OtpDto) {
     const token = this.request.cookies?.[CookiesKey.OTP];
-    const { code } = otpDto;
+    const {code} = otpDto;
     if (!token) throw new UnauthorizedException("token expired");
     const payload = this.tokenService.verifyOtpToken(token);
     const otp = await this.otpRepository.findOneBy({
@@ -167,14 +175,14 @@ export class AuthService {
     });
     if (payload.method === AuthMethod.Email)
       await this.userRepository.update(
-        { id: payload.userId },
+        {id: payload.userId},
         {
           verifiedEmail: true,
         },
       );
     if (payload.method === AuthMethod.Phone)
       await this.userRepository.update(
-        { id: payload.userId },
+        {id: payload.userId},
         {
           verifiedPhone: true,
         },
@@ -187,8 +195,8 @@ export class AuthService {
   }
 
   async validateToken(token: string) {
-    const { userId } = this.tokenService.verifyAccessToken(token);
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const {userId} = this.tokenService.verifyAccessToken(token);
+    const user = await this.userRepository.findOneBy({id: userId});
     if (!user) throw new UnauthorizedException("please log in ut account");
     return user;
   }
