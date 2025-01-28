@@ -11,39 +11,39 @@ import {ImageEntity} from "../../image/entities/image.entity";
 
 @Entity(EntityEnum.Blog)
 export class BlogEntity extends BaseEntity {
-    @Column()
-    title: string;
-    @Column({unique: true})
-    slug: string;
-    @Column()
-    studyTime: string;
-    @Column()
-    description: string;
-    @Column()
-    content: string;
-    @Column({nullable: true})
-    imageId: string
-    @ManyToOne(() => ImageEntity)
-    @JoinColumn({name: 'imageId'})
-    image: ImageEntity;
-    @Column()
-    authorId: string;
-    @ManyToOne(() => UserEntity, (user) => user.blogs, {onDelete: "CASCADE"})
-    author: UserEntity;
-    @Column({enum: BlogStatus, default: BlogStatus.Draft})
-    status: BlogStatus;
-    @OneToMany(() => BlogLikeEntity, (like) => like.blog, {nullable: true})
-    likes: BlogLikeEntity[];
-    @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.blog, {
-        nullable: true,
-    })
-    bookmarks: BlogBookmarkEntity[];
-    @OneToMany(() => BlogCommentEntity, (comment) => comment.blog, {
-        nullable: true,
-    })
-    comments: BlogCommentEntity[];
-    @OneToMany(() => BlogCategoryEntity, (category) => category.blog, {
-        nullable: true,
-    })
-    categories: BlogCategoryEntity[];
+  @Column()
+  title: string;
+  @Column({unique: true})
+  slug: string;
+  @Column()
+  studyTime: string;
+  @Column()
+  description: string;
+  @Column()
+  content: string;
+  @Column({nullable: true})
+  imageId: string
+  @ManyToOne(() => ImageEntity, {onDelete: "SET NULL"})
+  @JoinColumn({name: 'imageId'})
+  image: ImageEntity;
+  @Column()
+  authorId: string;
+  @ManyToOne(() => UserEntity, (user) => user.blogs, {onDelete: "CASCADE"})
+  author: UserEntity;
+  @Column({enum: BlogStatus, default: BlogStatus.Draft})
+  status: BlogStatus;
+  @OneToMany(() => BlogLikeEntity, (like) => like.blog, {nullable: true})
+  likes: BlogLikeEntity[];
+  @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.blog, {
+    nullable: true,
+  })
+  bookmarks: BlogBookmarkEntity[];
+  @OneToMany(() => BlogCommentEntity, (comment) => comment.blog, {
+    nullable: true,
+  })
+  comments: BlogCommentEntity[];
+  @OneToMany(() => BlogCategoryEntity, (category) => category.blog, {
+    nullable: true,
+  })
+  categories: BlogCategoryEntity[];
 }
