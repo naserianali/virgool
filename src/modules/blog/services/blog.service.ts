@@ -11,29 +11,29 @@ import {
   BlogFilterDto,
   CreateBlogDto,
 } from "../dto/create-blog.dto";
-import { UpdateBlogDto } from "../dto/update-blog.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { BlogEntity } from "../entities/blog.entity";
-import { Repository } from "typeorm";
-import { createSlug, randomId } from "../../../common/untils/functions";
-import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
-import { PaginationDto } from "../../../common/dto/pagination.dto";
+import {UpdateBlogDto} from "../dto/update-blog.dto";
+import {InjectRepository} from "@nestjs/typeorm";
+import {BlogEntity} from "../entities/blog.entity";
+import {Repository} from "typeorm";
+import {createSlug, randomId} from "../../../common/untils/functions";
+import {REQUEST} from "@nestjs/core";
+import {Request} from "express";
+import {PaginationDto} from "../../../common/dto/pagination.dto";
 import {
   Pagination,
   PaginationGenerator,
 } from "../../../common/untils/pagination";
-import { isArray } from "class-validator";
-import { CategoryService } from "../../category/category.service";
-import { BlogCategoryEntity } from "../entities/blog-category.entity";
-import { EntityEnum } from "../../../common/enums/entity.enum";
-import { join } from "path";
-import { existsSync, unlinkSync } from "fs";
-import { BlogLikeEntity } from "../entities/blog-like.entity";
-import { BlogBookmarkEntity } from "../entities/blog-bookmark.entity";
-import { BlogCommentService } from "./comment.service";
+import {isArray} from "class-validator";
+import {CategoryService} from "../../category/category.service";
+import {BlogCategoryEntity} from "../entities/blog-category.entity";
+import {EntityEnum} from "../../../common/enums/entity.enum";
+import {join} from "path";
+import {existsSync, unlinkSync} from "fs";
+import {BlogLikeEntity} from "../entities/blog-like.entity";
+import {BlogBookmarkEntity} from "../entities/blog-bookmark.entity";
+import {BlogCommentService} from "./comment.service";
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({scope: Scope.REQUEST})
 export class BlogService {
   constructor(
     @InjectRepository(BlogEntity)
@@ -47,10 +47,11 @@ export class BlogService {
     @Inject(REQUEST) private request: Request,
     private categoryService: CategoryService,
     private blogCommentService: BlogCommentService,
-  ) {}
+  ) {
+  }
 
   async create(createBlogDto: CreateBlogDto) {
-    let { title, slug, content, description, studyTime, image, categories } =
+    let {title, slug, content, description, studyTime, imageId, categories} =
       createBlogDto;
     if (!isArray(categories)) {
       throw new BadRequestException("Categories must be an array");
@@ -65,7 +66,7 @@ export class BlogService {
       content,
       description,
       studyTime,
-      image,
+      imageId,
       authorId: user.id,
     });
     blog = await this.blogRepository.save(blog);
@@ -96,7 +97,7 @@ export class BlogService {
   }
 
   async findAll(paginationDto: PaginationDto, filter: BlogFilterDto) {
-    let { search, category } = filter;
+    let {search, category} = filter;
     let where: string = "";
     if (category) {
       category = category.toLowerCase();
@@ -109,7 +110,7 @@ export class BlogService {
       where +=
         "CONCAT(blogs.title , blogs.content , blogs.description) ILIKE :search";
     }
-    const { perPage, page, skip } = Pagination(paginationDto);
+    const {perPage, page, skip} = Pagination(paginationDto);
     const [blogs, count] = await this.blogRepository
       .createQueryBuilder(EntityEnum.Blog)
       .leftJoin("blogs.categories", "categories")
@@ -121,15 +122,20 @@ export class BlogService {
         "blogs.comments",
         "blogs.comments",
         "comments",
-        (qb) => qb.where("comments.accepted = :accepted", { accepted: true }),
+        (qb) => qb.where("comments.accepted = :accepted", {accepted: true}),
       )
-      .where(where, { category, search })
+      .leftJoin("blogs.image" , "images" )
+      .where(where, {category, search})
       .addSelect([
         "category.title",
         "categories.id",
         "author.id",
         "profile.nickname",
+        "images.location",
+        "images.alt",
+        "images.name",
       ])
+
       .skip(skip)
       .take(perPage)
       .orderBy("blogs.createdAt", "DESC")
@@ -141,11 +147,11 @@ export class BlogService {
   }
 
   async findOneById(id: string) {
-    return await this.blogRepository.findOneBy({ id });
+    return await this.blogRepository.findOneBy({id});
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto) {
-    let { content, description, studyTime, image, categories, title, slug } =
+    let {content, description, studyTime, imageId, categories, title, slug} =
       updateBlogDto;
     const blog = await this.findOneById(id);
     if (!blog) throw new NotFoundException("blog not found");
@@ -171,12 +177,12 @@ export class BlogService {
     if (content) blog.content = content;
     if (description) blog.description = description;
     if (studyTime) blog.studyTime = studyTime;
-    if (image) {
-      if (blog?.image?.length > 0) {
-        let dirname = join("public", blog.image);
+    if (imageId) {
+      if (blog?.image?.location.length > 0) {
+        let dirname = join("public", blog.image.location);
         if (existsSync(dirname)) unlinkSync(dirname);
       }
-      blog.image = image;
+      blog.imageId = imageId;
     }
     await this.blogRepository.save(blog);
     return {
@@ -185,7 +191,7 @@ export class BlogService {
   }
 
   async remove(id: string) {
-    const blog = await this.blogRepository.findOneBy({ id });
+    const blog = await this.blogRepository.findOneBy({id});
     if (!blog) throw new BadRequestException("Blog does not exist");
     await this.blogRepository.remove(blog);
     return {
@@ -194,15 +200,15 @@ export class BlogService {
   }
 
   async findBlogBySlug(slug: string) {
-    return await this.blogRepository.findOneBy({ slug });
+    return await this.blogRepository.findOneBy({slug});
   }
 
   async findBlogById(id: string) {
-    return await this.blogRepository.findOneBy({ id });
+    return await this.blogRepository.findOneBy({id});
   }
 
   async like(id: string) {
-    const { id: userId } = this.request.user;
+    const {id: userId} = this.request.user;
     const blog = await this.findBlogById(id);
     if (!blog) throw new NotFoundException("Blog not found");
     const isLiked = await this.blogLikeRepository.findOneBy({
@@ -226,7 +232,7 @@ export class BlogService {
   }
 
   async bookmark(id: string) {
-    const { id: userId } = this.request.user;
+    const {id: userId} = this.request.user;
     const blog = await this.findBlogById(id);
     if (!blog) throw new NotFoundException("Blog not found");
     const isBookmarked = await this.blogBookmarkRepository.findOneBy({
@@ -250,7 +256,7 @@ export class BlogService {
   }
 
   async myBookmarks() {
-    const { id } = this.request.user;
+    const {id} = this.request.user;
     return await this.blogRepository.find({
       where: {
         bookmarks: {
@@ -264,7 +270,7 @@ export class BlogService {
     const userId = this?.request?.user?.id;
     let blog = await this.blogRepository
       .createQueryBuilder(EntityEnum.Blog)
-      .where("blogs.slug = :slug", { slug })
+      .where("blogs.slug = :slug", {slug})
       .leftJoin("blogs.categories", "categories")
       .leftJoin("categories.category", "category")
       .loadRelationCountAndMap("blogs.likes", "blogs.likes")
@@ -274,7 +280,7 @@ export class BlogService {
         "blogs.comments",
         "comments_count",
         (qb) =>
-          qb.where("comments_count.accepted = :accepted", { accepted: true }),
+          qb.where("comments_count.accepted = :accepted", {accepted: true}),
       )
       .getOne();
     if (!blog) throw new NotFoundException("Blog not found");
@@ -300,7 +306,7 @@ export class BlogService {
       isLiked,
       isBookmarked,
       ...blog,
-      comments: { ...comments },
+      comments: {...comments},
     };
   }
 }

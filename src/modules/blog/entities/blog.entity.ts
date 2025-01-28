@@ -1,5 +1,5 @@
 import {BaseEntity} from "../../../common/abstracts/base.entity";
-import {Column, Entity, ManyToOne, OneToMany} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import {EntityEnum} from "../../../common/enums/entity.enum";
 import {BlogStatus} from "../emum/status.enum";
 import {UserEntity} from "../../user/entities/user.entity";
@@ -7,6 +7,7 @@ import {BlogLikeEntity} from "./blog-like.entity";
 import {BlogBookmarkEntity} from "./blog-bookmark.entity";
 import {BlogCommentEntity} from './blog-commnets.entity';
 import {BlogCategoryEntity} from "./blog-category.entity";
+import {ImageEntity} from "../../image/entities/image.entity";
 
 @Entity(EntityEnum.Blog)
 export class BlogEntity extends BaseEntity {
@@ -21,7 +22,10 @@ export class BlogEntity extends BaseEntity {
     @Column()
     content: string;
     @Column({nullable: true})
-    image: string;
+    imageId: string
+    @ManyToOne(() => ImageEntity)
+    @JoinColumn({name: 'imageId'})
+    image: ImageEntity;
     @Column()
     authorId: string;
     @ManyToOne(() => UserEntity, (user) => user.blogs, {onDelete: "CASCADE"})
