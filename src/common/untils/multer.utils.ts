@@ -4,7 +4,7 @@ import {join, extname} from 'path';
 import {BadRequestException} from '@nestjs/common';
 import {diskStorage, StorageEngine} from 'multer';
 import * as crypto from 'node:crypto';
-import * as sharp from 'sharp'; // Import sharp
+import * as sharp from 'sharp';
 
 export type CallbackDestinationFunction = (
   error: Error,
