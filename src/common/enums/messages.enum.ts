@@ -54,3 +54,7 @@ export enum ConflictMessage {
   Phone = "موبایل توسط شخص دیگری استفاده شده",
   Username = "تام کاربری توسط شخص دیگری استفاده شده",
 }
+
+export enum ForbiddenMessage {
+  RoleAccess = "امکان دسترسی وجود ندارد."
+}

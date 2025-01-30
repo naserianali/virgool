@@ -1,28 +1,14 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Query,
-  ParseUUIDPipe,
-  Put,
-} from "@nestjs/common";
-import { BlogService } from "../services/blog.service";
-import { BlogFilterDto, CreateBlogDto } from "../dto/create-blog.dto";
-import { UpdateBlogDto } from "../dto/update-blog.dto";
-import { AuthGuard } from "../../auth/guards/auth/auth.guard";
-import { ApiBearerAuth } from "@nestjs/swagger";
-import { Pagination } from "../../../common/decorators/pagination.decorator";
-import { SkipAuth } from "../../../common/decorators/skip-auth.decorator";
-import { PaginationDto } from "../../../common/dto/pagination.dto";
+import {Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query,} from "@nestjs/common";
+import {BlogService} from "../services/blog.service";
+import {BlogFilterDto, CreateBlogDto} from "../dto/create-blog.dto";
+import {UpdateBlogDto} from "../dto/update-blog.dto";
+import {Pagination} from "../../../common/decorators/pagination.decorator";
+import {SkipAuth} from "../../../common/decorators/skip-auth.decorator";
+import {PaginationDto} from "../../../common/dto/pagination.dto";
+import {AuthDecorator} from "../../../common/decorators/auth.decorator";
 
 @Controller("blog")
-@UseGuards(AuthGuard)
-@ApiBearerAuth("Authentication")
+@AuthDecorator()
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 

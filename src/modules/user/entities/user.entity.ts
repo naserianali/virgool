@@ -7,35 +7,38 @@ import {BlogLikeEntity} from "../../blog/entities/blog-like.entity";
 import {BlogBookmarkEntity} from '../../blog/entities/blog-bookmark.entity';
 import {BlogCommentEntity} from '../../blog/entities/blog-commnets.entity';
 import {ImageEntity} from "../../image/entities/image.entity";
+import {Role} from "../../../common/enums/Role.enum";
 
 @Entity(EntityEnum.Users)
 export class UserEntity extends BaseEntity {
-    @Column({unique: true})
-    username: string;
-    @Column({nullable: true})
-    password: string;
-    @Column({unique: true, nullable: true})
-    phone: string;
-    @Column({unique: true, nullable: true})
-    email: string;
-    @OneToOne(() => ProfileEntity, (profile) => profile.user, {nullable: true})
-    profile: ProfileEntity;
-    @Column({default: false})
-    verifiedEmail: boolean;
-    @Column({default: false})
-    verifiedPhone: boolean;
-    @OneToMany(() => BlogEntity, (blog) => blog.author)
-    blogs: BlogEntity[];
-    @OneToMany(() => BlogLikeEntity, (like) => like.user, {nullable: true})
-    blogLikes: BlogLikeEntity[];
-    @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.user, {
-        nullable: true,
-    })
-    bookmarks: BlogBookmarkEntity[];
-    @OneToMany(() => BlogCommentEntity, (comment) => comment.user, {
-        nullable: true,
-    })
-    comments: BlogBookmarkEntity[];
-    @OneToMany(() => ImageEntity, (image) => image.user)
-    images: ImageEntity[];
+  @Column({unique: true})
+  username: string;
+  @Column({nullable: true})
+  password: string;
+  @Column({unique: true, nullable: true})
+  phone: string;
+  @Column({unique: true, nullable: true})
+  email: string;
+  @Column({default : Role.User})
+  role: Role;
+  @OneToOne(() => ProfileEntity, (profile) => profile.user, {nullable: true})
+  profile: ProfileEntity;
+  @Column({default: false})
+  verifiedEmail: boolean;
+  @Column({default: false})
+  verifiedPhone: boolean;
+  @OneToMany(() => BlogEntity, (blog) => blog.author)
+  blogs: BlogEntity[];
+  @OneToMany(() => BlogLikeEntity, (like) => like.user, {nullable: true})
+  blogLikes: BlogLikeEntity[];
+  @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.user, {
+    nullable: true,
+  })
+  bookmarks: BlogBookmarkEntity[];
+  @OneToMany(() => BlogCommentEntity, (comment) => comment.user, {
+    nullable: true,
+  })
+  comments: BlogBookmarkEntity[];
+  @OneToMany(() => ImageEntity, (image) => image.user)
+  images: ImageEntity[];
 }

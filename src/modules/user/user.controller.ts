@@ -30,10 +30,10 @@ import { Response } from "express";
 import { CookiesKey } from "../../common/enums/cookie.enum";
 import { OtpDto } from "../auth/dto/auth.dto";
 import { AuthMethod } from "../auth/enums/method.enum";
+import {AuthDecorator} from "../../common/decorators/auth.decorator";
 
 @Controller("user")
-@UseGuards(AuthGuard)
-@ApiBearerAuth("Authentication")
+@AuthDecorator()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
