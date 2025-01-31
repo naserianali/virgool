@@ -5,6 +5,7 @@ export enum BadRequestMessage {
   InvalidCategories = "دسته بندی ها را به درستی وارد کنید",
   AlreadyAccepted = "نظر انتخاب شده قبلا تایید شده است",
   AlreadyRejected = "نظر انتخاب شده قبلا رد شده است",
+  InValidId = "شناسه انتخاب شده معتبر نمی باشد."
 }
 
 export enum AuthMessage {

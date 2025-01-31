@@ -8,6 +8,7 @@ import {BlogBookmarkEntity} from '../../blog/entities/blog-bookmark.entity';
 import {BlogCommentEntity} from '../../blog/entities/blog-commnets.entity';
 import {ImageEntity} from "../../image/entities/image.entity";
 import {Role} from "../../../common/enums/Role.enum";
+import {FollowEntity} from "./follow.entity";
 
 @Entity(EntityEnum.Users)
 export class UserEntity extends BaseEntity {
@@ -19,7 +20,7 @@ export class UserEntity extends BaseEntity {
   phone: string;
   @Column({unique: true, nullable: true})
   email: string;
-  @Column({default : Role.User})
+  @Column({default: Role.User})
   role: Role;
   @OneToOne(() => ProfileEntity, (profile) => profile.user, {nullable: true})
   profile: ProfileEntity;
@@ -35,6 +36,10 @@ export class UserEntity extends BaseEntity {
     nullable: true,
   })
   bookmarks: BlogBookmarkEntity[];
+  @OneToMany(() => FollowEntity, (follow) => follow.following)
+  following: FollowEntity[];
+  @OneToMany(() => FollowEntity, (follow) => follow.following)
+  followers: BlogEntity[];
   @OneToMany(() => BlogCommentEntity, (comment) => comment.user, {
     nullable: true,
   })

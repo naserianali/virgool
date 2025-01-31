@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseFilePipe,
+  ParseFilePipe, ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -13,29 +13,30 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { CreateUserDto } from "./dto/create-user.dto";
+import {UserService} from "./user.service";
+import {CreateUserDto} from "./dto/create-user.dto";
 import {
   ChangeEmailDto,
   ChangePhoneDto,
   ChangeUsernameDto,
   ProfileDto,
 } from "./dto/profile.dto";
-import { ApiBearerAuth, ApiConsumes } from "@nestjs/swagger";
-import { SwaggerConsumerEnum } from "../auth/enums/swagger.consumer.enum";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { MulterStorage } from "../../common/untils/multer.utils";
-import { AuthGuard } from "../auth/guards/auth/auth.guard";
-import { Response } from "express";
-import { CookiesKey } from "../../common/enums/cookie.enum";
-import { OtpDto } from "../auth/dto/auth.dto";
-import { AuthMethod } from "../auth/enums/method.enum";
+import {ApiBearerAuth, ApiConsumes, ApiParam} from "@nestjs/swagger";
+import {SwaggerConsumerEnum} from "../auth/enums/swagger.consumer.enum";
+import {FileFieldsInterceptor} from "@nestjs/platform-express";
+import {MulterStorage} from "../../common/untils/multer.utils";
+import {AuthGuard} from "../auth/guards/auth/auth.guard";
+import {Response} from "express";
+import {CookiesKey} from "../../common/enums/cookie.enum";
+import {OtpDto} from "../auth/dto/auth.dto";
+import {AuthMethod} from "../auth/enums/method.enum";
 import {AuthDecorator} from "../../common/decorators/auth.decorator";
 
 @Controller("user")
 @AuthDecorator()
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) {
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -57,6 +58,12 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get('follow/:followingId')
+  @ApiParam({name: 'followingId'})
+  follow(@Param('followingId', ParseUUIDPipe) followingId: string) {
+    return this.userService.followToggle(followingId)
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.userService.findOne(+id);
@@ -67,11 +74,11 @@ export class UserController {
     @Body() changeEmailDto: ChangeEmailDto,
     @Res() response: Response,
   ) {
-    const { code, token, message } = await this.userService.changeEmailOrPhone(
+    const {code, token, message} = await this.userService.changeEmailOrPhone(
       changeEmailDto.email,
       AuthMethod.Email,
     );
-    if (message) return response.json({ message });
+    if (message) return response.json({message});
     response.cookie(CookiesKey.Email_OTP, token, {
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 60 * 2),
@@ -95,7 +102,7 @@ export class UserController {
       changePhoneDto.phone,
       AuthMethod.Phone,
     );
-    if (message) return response.json({ message });
+    if (message) return response.json({message});
     response.cookie(CookiesKey.Phone_OTP, token, {
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 60 * 2),
@@ -110,9 +117,9 @@ export class UserController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
-        { name: "image", maxCount: 1 },
+        {name: "image", maxCount: 1},
 
-        { name: "bgImage", maxCount: 1 },
+        {name: "bgImage", maxCount: 1},
       ],
       {
         storage: MulterStorage("profile"),
@@ -127,9 +134,9 @@ export class UserController {
         validators: [],
       }),
     )
-    files: any,
+      files: any,
     @Body()
-    profileDto: ProfileDto,
+      profileDto: ProfileDto,
   ) {
     return this.userService.changeProfile(files, profileDto);
   }

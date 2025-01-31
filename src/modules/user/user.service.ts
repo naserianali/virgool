@@ -3,29 +3,32 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
   Scope,
   UnauthorizedException,
 } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { ProfileDto } from "./dto/profile.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { UserEntity } from "./entities/user.entity";
-import { Repository } from "typeorm";
-import { ProfileEntity } from "./entities/profile.entity";
-import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
-import { isDate } from "class-validator";
-import { Gender } from "./enum/gender.enum";
-import { existsSync, unlinkSync } from "fs";
-import { join } from "path";
-import { AuthService } from "../auth/auth.service";
-import { AuthMethod } from "../auth/enums/method.enum";
-import { TokenService } from "../auth/token.service";
-import { OtpEntity } from "./entities/otp.entity";
-import { CookiesKey } from "../../common/enums/cookie.enum";
+import {CreateUserDto} from "./dto/create-user.dto";
+import {UpdateUserDto} from "./dto/update-user.dto";
+import {ProfileDto} from "./dto/profile.dto";
+import {InjectRepository} from "@nestjs/typeorm";
+import {UserEntity} from "./entities/user.entity";
+import {Repository} from "typeorm";
+import {ProfileEntity} from "./entities/profile.entity";
+import {REQUEST} from "@nestjs/core";
+import {Request} from "express";
+import {isDate} from "class-validator";
+import {Gender} from "./enum/gender.enum";
+import {existsSync, unlinkSync} from "fs";
+import {join} from "path";
+import {AuthService} from "../auth/auth.service";
+import {AuthMethod} from "../auth/enums/method.enum";
+import {TokenService} from "../auth/token.service";
+import {OtpEntity} from "./entities/otp.entity";
+import {CookiesKey} from "../../common/enums/cookie.enum";
+import {BadRequestMessage, NotFoundMessage, PublicMessage} from "../../common/enums/messages.enum";
+import {FollowEntity} from "./entities/follow.entity";
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({scope: Scope.REQUEST})
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
@@ -34,10 +37,13 @@ export class UserService {
     private profileRepository: Repository<ProfileEntity>,
     @InjectRepository(OtpEntity)
     private otpRepository: Repository<OtpEntity>,
+    @InjectRepository(FollowEntity)
+    private followRepository: Repository<FollowEntity>,
     @Inject(REQUEST) private request: Request,
     private authService: AuthService,
     private tokenService: TokenService,
-  ) {}
+  ) {
+  }
 
   create(createUserDto: CreateUserDto) {
     return "This action adds a new user";
@@ -45,7 +51,7 @@ export class UserService {
 
   findAll() {
     return this.userRepository.findOne({
-      where: { id: this.request.user.id },
+      where: {id: this.request.user.id},
       relations: {
         profile: true,
       },
@@ -66,7 +72,7 @@ export class UserService {
 
   async changeProfile(files: any, profileDto: ProfileDto) {
     const user = this.request.user;
-    let { image: profileImage, bgImage: background_image } = files;
+    let {image: profileImage, bgImage: background_image} = files;
 
     if (profileImage?.length > 0) {
       let [image] = profileImage;
@@ -76,7 +82,7 @@ export class UserService {
       let [image] = background_image;
       background_image = image.path.slice(7);
     }
-    let { bio, linkedInProfile, nickname, gender, birthday, bgImage, image } =
+    let {bio, linkedInProfile, nickname, gender, birthday, bgImage, image} =
       profileDto;
     let profile: ProfileEntity = await this.profileRepository.findOneBy({
       userId: user.id,
@@ -123,11 +129,11 @@ export class UserService {
   }
 
   async changeEmailOrPhone(value: string, type: AuthMethod) {
-    const { id } = this.request.user;
+    const {id} = this.request.user;
     if (type === AuthMethod.Username)
       throw new BadRequestException("Unexpected error");
     const user = await this.userRepository.findOneBy(
-      type === AuthMethod.Email ? { email: value } : { phone: value },
+      type === AuthMethod.Email ? {email: value} : {phone: value},
     );
     if (user && user.id !== id)
       throw new ConflictException("the email is already in use");
@@ -169,11 +175,11 @@ export class UserService {
   }
 
   async verifyCode(code: string, type: AuthMethod) {
-    const { id } = this.request.user;
+    const {id} = this.request.user;
     const token =
       this.request.cookies?.[
         type === AuthMethod.Email ? CookiesKey.Email_OTP : CookiesKey.Phone_OTP
-      ];
+        ];
     if (!token) throw new BadRequestException("token not found");
     let payload = null;
     if (type === AuthMethod.Email)
@@ -185,7 +191,7 @@ export class UserService {
       throw new ConflictException("unexpected error happened");
     const otp = await this.checkOtp(username, code);
     if (!otp) throw new BadRequestException("unexpected error happened");
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOneBy({id});
     if (type === AuthMethod.Email) {
       user.email = username;
       user.verifiedEmail = true;
@@ -210,8 +216,8 @@ export class UserService {
   }
 
   async changeUsername(username: string) {
-    const { id } = this.request.user;
-    const user = await this.userRepository.findOneBy({ username });
+    const {id} = this.request.user;
+    const user = await this.userRepository.findOneBy({username});
     if (user && id !== user.id)
       throw new BadRequestException("unexpected error happened");
     await this.userRepository.update(id, {
@@ -219,6 +225,25 @@ export class UserService {
     });
     return {
       message: "username updated successfully",
+    };
+  }
+
+  async followToggle(followingId: string) {
+    const user = this.request.user;
+    const following = await this.userRepository.findOneBy({id: followingId});
+    if (!following) throw new NotFoundException(NotFoundMessage.NotFoundUser);
+    if (user.id === followingId) throw new BadRequestException(BadRequestMessage.InValidId)
+    const isFollowing = await this.followRepository.findOneBy({followingId, followerId: user.id});
+    let message = PublicMessage.Followed;
+    if (isFollowing) {
+      await this.followRepository.remove(isFollowing);
+      message = PublicMessage.UnFollow;
+    } else await this.followRepository.insert({
+      followingId,
+      followerId: user.id
+    });
+    return {
+      message
     };
   }
 }
