@@ -46,4 +46,6 @@ export class UserEntity extends BaseEntity {
   comments: BlogBookmarkEntity[];
   @OneToMany(() => ImageEntity, (image) => image.user)
   images: ImageEntity[];
+  @Column({default: false})
+  suspended: boolean;
 }

@@ -9,6 +9,7 @@ import {isJWT} from "class-validator";
 import {AuthService} from "../../auth.service";
 import {Reflector} from "@nestjs/core";
 import {SKIP_AUTH} from "../../../../common/decorators/skip-auth.decorator";
+import {AuthMessage, ForbiddenMessage} from "../../../../common/enums/messages.enum";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -25,6 +26,7 @@ export class AuthGuard implements CanActivate {
         const request: Request = httpContext.getRequest<Request>();
         const token = this.extractToken(request);
         request.user = await this.authService.validateToken(token);
+        if (request.user.suspended) throw new UnauthorizedException(AuthMessage.Blocked);
         return true;
     }
 

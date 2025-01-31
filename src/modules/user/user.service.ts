@@ -30,6 +30,7 @@ import {FollowEntity} from "./entities/follow.entity";
 import {EntityEnum} from "../../common/enums/entity.enum";
 import {PaginationDto} from "../../common/dto/pagination.dto";
 import {Pagination, PaginationGenerator} from "../../common/untils/pagination";
+import {SuspendedDto} from "./dto/suspended.dto";
 
 @Injectable({scope: Scope.REQUEST})
 export class UserService {
@@ -264,7 +265,7 @@ export class UserService {
       select: {
         follower: {
           id: true,
-          username:true,
+          username: true,
           profile: {
             nickname: true
           }
@@ -292,7 +293,7 @@ export class UserService {
       select: {
         follower: {
           id: true,
-          username:true,
+          username: true,
           profile: {
             nickname: true
           }
@@ -304,6 +305,23 @@ export class UserService {
     return {
       pagination: PaginationGenerator(count, page, perPage),
       following
+    }
+  }
+
+  async toggleSuspended(suspendedDto: SuspendedDto) {
+    const {userId} = suspendedDto
+    const user = await this.userRepository.findOneBy({id: userId})
+    if (!user) throw new NotFoundException(NotFoundMessage.NotFoundUser)
+    console.log(user)
+    let message = PublicMessage.Blocked;
+    if (user?.suspended) {
+      user.suspended = false;
+      message = PublicMessage.UnBlocked;
+    } else
+      user.suspended = true;
+    await this.userRepository.save(user)
+    return {
+      message
     }
   }
 }

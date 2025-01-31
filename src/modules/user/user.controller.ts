@@ -33,6 +33,9 @@ import {AuthMethod} from "../auth/enums/method.enum";
 import {AuthDecorator} from "../../common/decorators/auth.decorator";
 import {Pagination} from "../../common/decorators/pagination.decorator";
 import {PaginationDto} from "../../common/dto/pagination.dto";
+import {SuspendedDto} from "./dto/suspended.dto";
+import {CanAccess} from "../../common/decorators/role.decorator";
+import {Role} from "../../common/enums/Role.enum";
 
 @Controller("user")
 @AuthDecorator()
@@ -74,7 +77,7 @@ export class UserController {
 
   @Get('/following')
   @Pagination()
-  following(@Query() paginationDto : PaginationDto) {
+  following(@Query() paginationDto: PaginationDto) {
     return this.userService.following(paginationDto)
   }
 
@@ -153,6 +156,12 @@ export class UserController {
       profileDto: ProfileDto,
   ) {
     return this.userService.changeProfile(files, profileDto);
+  }
+
+  @Put('/suspend')
+  @CanAccess(Role.Admin)
+  toggleSuspend(@Body() suspendedDto: SuspendedDto) {
+    return this.userService.toggleSuspended(suspendedDto)
   }
 
   @Patch("/change-username")
