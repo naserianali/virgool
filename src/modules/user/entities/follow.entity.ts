@@ -9,10 +9,10 @@ export class FollowEntity extends BaseEntity {
   followingId: string;
   @Column()
   followerId: string;
-  @ManyToOne(() => UserEntity, user => user.following, {onDelete: "CASCADE"})
+  @ManyToOne(() => UserEntity, user => user.followers, {onDelete: "CASCADE"})
   @JoinColumn({name: 'followingId'})
   following: UserEntity;
-  @ManyToOne(() => UserEntity, user => user.followers, {onDelete: "CASCADE"})
+  @ManyToOne(() => UserEntity, user => user.following, {onDelete: "CASCADE"})
   @JoinColumn({name: 'followerId'})
   follower: UserEntity;
 }

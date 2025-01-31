@@ -27,6 +27,9 @@ import {OtpEntity} from "./entities/otp.entity";
 import {CookiesKey} from "../../common/enums/cookie.enum";
 import {BadRequestMessage, NotFoundMessage, PublicMessage} from "../../common/enums/messages.enum";
 import {FollowEntity} from "./entities/follow.entity";
+import {EntityEnum} from "../../common/enums/entity.enum";
+import {PaginationDto} from "../../common/dto/pagination.dto";
+import {Pagination, PaginationGenerator} from "../../common/untils/pagination";
 
 @Injectable({scope: Scope.REQUEST})
 export class UserService {
@@ -49,13 +52,14 @@ export class UserService {
     return "This action adds a new user";
   }
 
-  findAll() {
-    return this.userRepository.findOne({
-      where: {id: this.request.user.id},
-      relations: {
-        profile: true,
-      },
-    });
+  profile() {
+    const {id} = this.request.user;
+    return this.userRepository.createQueryBuilder(EntityEnum.Users)
+      .where({id})
+      .leftJoinAndSelect("users.profile", 'profile')
+      .loadRelationCountAndMap('users.followers', 'users.followers')
+      .loadRelationCountAndMap('users.following', 'users.following')
+      .getOne();
   }
 
   findOne(id: number) {
@@ -245,5 +249,61 @@ export class UserService {
     return {
       message
     };
+  }
+
+  async followers(paginationDto: PaginationDto) {
+    const {page, perPage, skip} = Pagination(paginationDto);
+    const {id} = this.request.user;
+    const [following, count] = await this.followRepository.findAndCount({
+      where: {followingId: id},
+      relations: {
+        follower: {
+          profile: true,
+        }
+      },
+      select: {
+        follower: {
+          id: true,
+          username:true,
+          profile: {
+            nickname: true
+          }
+        }
+      },
+      skip,
+      take: perPage
+    })
+    return {
+      pagination: PaginationGenerator(count, page, perPage),
+      following
+    }
+  }
+
+  async following(paginationDto: PaginationDto) {
+    const {page, perPage, skip} = Pagination(paginationDto);
+    const {id} = this.request.user;
+    const [following, count] = await this.followRepository.findAndCount({
+      where: {followerId: id},
+      relations: {
+        follower: {
+          profile: true,
+        }
+      },
+      select: {
+        follower: {
+          id: true,
+          username:true,
+          profile: {
+            nickname: true
+          }
+        }
+      },
+      skip,
+      take: perPage
+    })
+    return {
+      pagination: PaginationGenerator(count, page, perPage),
+      following
+    }
   }
 }

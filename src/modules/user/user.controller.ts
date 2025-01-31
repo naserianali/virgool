@@ -7,7 +7,7 @@ import {
   ParseFilePipe, ParseUUIDPipe,
   Patch,
   Post,
-  Put,
+  Put, Query,
   Res,
   UploadedFiles,
   UseGuards,
@@ -31,6 +31,8 @@ import {CookiesKey} from "../../common/enums/cookie.enum";
 import {OtpDto} from "../auth/dto/auth.dto";
 import {AuthMethod} from "../auth/enums/method.enum";
 import {AuthDecorator} from "../../common/decorators/auth.decorator";
+import {Pagination} from "../../common/decorators/pagination.decorator";
+import {PaginationDto} from "../../common/dto/pagination.dto";
 
 @Controller("user")
 @AuthDecorator()
@@ -53,15 +55,27 @@ export class UserController {
     return this.userService.verifyCode(otpDto.code, AuthMethod.Phone);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('/profile')
+  profile() {
+    return this.userService.profile();
   }
 
   @Get('follow/:followingId')
   @ApiParam({name: 'followingId'})
   follow(@Param('followingId', ParseUUIDPipe) followingId: string) {
     return this.userService.followToggle(followingId)
+  }
+
+  @Get('followers')
+  @Pagination()
+  followers(@Query() paginationDto: PaginationDto) {
+    return this.userService.followers(paginationDto)
+  }
+
+  @Get('/following')
+  @Pagination()
+  following(@Query() paginationDto : PaginationDto) {
+    return this.userService.following(paginationDto)
   }
 
   @Get(":id")

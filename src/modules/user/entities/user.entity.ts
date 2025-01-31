@@ -36,7 +36,7 @@ export class UserEntity extends BaseEntity {
     nullable: true,
   })
   bookmarks: BlogBookmarkEntity[];
-  @OneToMany(() => FollowEntity, (follow) => follow.following)
+  @OneToMany(() => FollowEntity, (follow) => follow.follower)
   following: FollowEntity[];
   @OneToMany(() => FollowEntity, (follow) => follow.following)
   followers: BlogEntity[];
