@@ -11,7 +11,9 @@ declare namespace NodeJS {
     ACCESS_TOKEN_SECRET: string;
     EMAIL_TOKEN_SECRET: string;
     PHONE_TOKEN_SECRET: string;
-    SMS_IR_VERIFY_SEND_URL: string
-    SMS_IR_API_KEY: string
+    SMS_IR_VERIFY_SEND_URL: string;
+    SMS_IR_API_KEY: string;
+    GOOGLE_CLIENT_ID:string;
+    GOOGLE_CLIENT_SECRET:string;
   }
 }

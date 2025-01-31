@@ -6,3 +6,11 @@ export type AuthResponse = {
   method: AuthMethod,
   username?: string
 }
+
+export type GoogleUser = {
+  firstName?: string,
+  lastName?: string,
+  email: string,
+  accessToken?: string,
+  image:string
+}
