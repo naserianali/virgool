@@ -141,8 +141,8 @@ export class AuthService {
     const expiredAt = new Date(Date.now() + 1000 * 60 * 2);
     let otp = await this.otpRepository.findOneBy({username});
     if (otp) {
-      /*  if (otp.expiredAt > new Date())
-          throw new UnauthorizedException("Token expire time is still on ");*/
+      if (otp.expiredAt > new Date())
+        throw new UnauthorizedException("Token expire time is still on ");
       otp.code = code;
       otp.expiredAt = expiredAt;
     } else {
