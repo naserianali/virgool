@@ -21,11 +21,10 @@ import {
   ChangeUsernameDto,
   ProfileDto,
 } from "./dto/profile.dto";
-import {ApiBearerAuth, ApiConsumes, ApiParam} from "@nestjs/swagger";
+import {ApiConsumes, ApiParam} from "@nestjs/swagger";
 import {SwaggerConsumerEnum} from "../auth/enums/swagger.consumer.enum";
 import {FileFieldsInterceptor} from "@nestjs/platform-express";
 import {MulterStorage} from "../../common/untils/multer.utils";
-import {AuthGuard} from "../auth/guards/auth/auth.guard";
 import {Response} from "express";
 import {CookiesKey} from "../../common/enums/cookie.enum";
 import {OtpDto} from "../auth/dto/auth.dto";
@@ -81,10 +80,6 @@ export class UserController {
     return this.userService.following(paginationDto)
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOne(+id);
-  }
 
   @Patch("/change-email")
   async changeEmail(
