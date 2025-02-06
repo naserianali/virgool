@@ -96,6 +96,7 @@ export class UserController {
       expires: new Date(Date.now() + 1000 * 60 * 2),
     });
     response.json({
+      otpSent: true,
       code,
       message: "OTP sent",
     });
@@ -120,6 +121,7 @@ export class UserController {
       expires: new Date(Date.now() + 1000 * 60 * 2),
     });
     response.json({
+      otpSent: true,
       code,
       message: "OTP sent",
     });

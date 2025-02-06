@@ -8,7 +8,6 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import {CreateUserDto} from "./dto/create-user.dto";
-import {UpdateUserDto} from "./dto/update-user.dto";
 import {ProfileDto} from "./dto/profile.dto";
 import {InjectRepository} from "@nestjs/typeorm";
 import {UserEntity} from "./entities/user.entity";
@@ -69,8 +68,10 @@ export class UserService {
 
   async changeProfile(files: any, profileDto: ProfileDto) {
     const user = this.request.user;
-    let {image: profileImage, bgImage: background_image} = files;
-
+    let profileImage: any, background_image: any;
+    if (files) {
+      ({image: profileImage, bgImage: background_image} = files);
+    }
     if (profileImage?.length > 0) {
       let [image] = profileImage;
       profileImage = image.path.slice(7);
@@ -132,8 +133,13 @@ export class UserService {
     const user = await this.userRepository.findOneBy(
       type === AuthMethod.Email ? {email: value} : {phone: value},
     );
+    if (user && user.id === id)
+      return {
+        otpSent: false,
+        message: type === AuthMethod.Email ? "Email Updated Successfully" : "Phone Updated Successfully"
+      }
     if (user && user.id !== id)
-      throw new ConflictException("the email is already in use");
+      throw new ConflictException(type === AuthMethod.Email ? "the email is already in use" : "the phone is already in use");
     else if (
       user &&
       user.id === id &&
@@ -141,6 +147,7 @@ export class UserService {
       user.email === value
     )
       return {
+        otpSent: false,
         message: "Email updated successfully",
       };
     else if (
@@ -150,7 +157,8 @@ export class UserService {
       user.phone === value
     )
       return {
-        message: "Email updated successfully",
+        otpSent: false,
+        message: "Phone updated successfully",
       };
     const otp = await this.authService.sendOtp(type, value);
     let token: string;
@@ -166,6 +174,7 @@ export class UserService {
       });
     }
     return {
+      otpSent: true,
       code: otp.code,
       token,
     };
