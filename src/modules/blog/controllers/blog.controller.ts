@@ -28,8 +28,9 @@ export class BlogController {
   }
 
   @Get("/my")
-  getMyBlogs() {
-    return this.blogService.getMyBlogs();
+  @Pagination()
+  getMyBlogs(@Query() paginationDto: PaginationDto) {
+    return this.blogService.getMyBlogs(paginationDto);
   }
 
   @Get("/my/bookmarks")

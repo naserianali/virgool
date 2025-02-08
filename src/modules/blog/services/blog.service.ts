@@ -84,16 +84,26 @@ export class BlogService {
     };
   }
 
-  async getMyBlogs() {
+  async getMyBlogs(paginationDto: PaginationDto) {
+    const {perPage, page, skip} = Pagination(paginationDto);
     const user = this.request.user;
-    return await this.blogRepository.find({
-      where: {
-        authorId: user.id,
-      },
-      order: {
-        createdAt: "DESC",
-      },
-    });
+    const [blogs, count] = await this.blogRepository.createQueryBuilder(EntityEnum.Blog)
+      .where({authorId: user.id})
+      .leftJoinAndSelect("blogs.image" , 'image')
+      .loadRelationCountAndMap("blogs.likes", "blogs.likes")
+      .loadRelationCountAndMap(
+        "blogs.comments",
+        "blogs.comments",
+        "comments",
+        (qb) => qb.where("comments.accepted = :accepted", {accepted: true}),
+      )
+      .skip(skip)
+      .take(perPage)
+      .getManyAndCount();
+    return {
+      pagination: PaginationGenerator(count, page, perPage),
+      blogs
+    }
   }
 
   async findAll(paginationDto: PaginationDto, filter: BlogFilterDto) {
@@ -124,7 +134,7 @@ export class BlogService {
         "comments",
         (qb) => qb.where("comments.accepted = :accepted", {accepted: true}),
       )
-      .leftJoin("blogs.image" , "images" )
+      .leftJoin("blogs.image", "images")
       .where(where, {category, search})
       .addSelect([
         "category.title",
@@ -146,19 +156,28 @@ export class BlogService {
     };
   }
 
-  async findOneById(id: string) {
-    return await this.blogRepository.findOneBy({id});
+  async findOneById(id: string, userId: string = null) {
+    if (!userId)
+      return await this.blogRepository.findOneBy({id});
+    else
+      return this.blogRepository.findOneBy({
+        id, authorId: userId
+      })
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto) {
+    const {id: userId} = this.request.user;
     let {content, description, studyTime, imageId, categories, title, slug} =
       updateBlogDto;
-    const blog = await this.findOneById(id);
+    const blog = await this.findOneById(id, userId);
+    console.log(blog)
     if (!blog) throw new NotFoundException("blog not found");
-    if (blog.id !== id && slug === blog.slug)
-      slug = createSlug(slug ?? title) + `-${randomId()}`;
-    if (blog.id === id && slug !== blog.slug)
-      blog.slug = createSlug(slug ?? title);
+    if (slug && slug !== blog.slug) {
+      const existedBlog = await this.findBlogBySlug(slug);
+      if (existedBlog)
+        slug = createSlug(slug) + `-${randomId()}`
+    }
+    blog.slug = slug;
     if (title) blog.title = title;
     if (categories && categories.length > 0) {
       await this.blogCategoryRepository.delete({
