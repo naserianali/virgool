@@ -5,7 +5,7 @@ import {UserEntity} from "./user.entity";
 
 @Entity(EntityEnum.Profiles)
 export class ProfileEntity extends BaseEntity {
-    @Column()
+    @Column({nullable :true})
     nickname: string;
     @Column({nullable: true})
     bio: string;

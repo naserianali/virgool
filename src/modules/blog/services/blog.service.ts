@@ -90,6 +90,8 @@ export class BlogService {
     const [blogs, count] = await this.blogRepository.createQueryBuilder(EntityEnum.Blog)
       .where({authorId: user.id})
       .leftJoinAndSelect("blogs.image" , 'image')
+      .leftJoin("blogs.categories", "categories")
+      .leftJoin("categories.category", "category")
       .loadRelationCountAndMap("blogs.likes", "blogs.likes")
       .loadRelationCountAndMap(
         "blogs.comments",
@@ -97,6 +99,10 @@ export class BlogService {
         "comments",
         (qb) => qb.where("comments.accepted = :accepted", {accepted: true}),
       )
+      .addSelect([
+        "category.title",
+        "categories.id",
+      ])
       .skip(skip)
       .take(perPage)
       .getManyAndCount();
