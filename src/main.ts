@@ -9,20 +9,20 @@ import {NestExpressApplication} from "@nestjs/platform-express";
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   SwaggerConfigInit(app);
-  const {PORT} = process.env;
-  const {COOKE_SECRET} = process.env;
+  const {PORT, HOST , HOST_PREFIX , COOKIE_SECRET} = process.env;
   app.useGlobalPipes(new ValidationPipe());
-  app.use(CookieParser(COOKE_SECRET));
+  app.use(CookieParser(COOKIE_SECRET));
   app.useStaticAssets("public");
   app.enableCors({
     origin: "http://localhost:4000",
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
-  })
-  await app.listen(PORT, () => {
+  });
+  await app.listen(PORT, HOST, () => {
     console.log(`Server started on port ${PORT}`);
-    console.log(`Swagger is up in http://localhost:${PORT}/docs`);
+    console.log(`Swagger is up in ${HOST_PREFIX}${HOST}:${PORT}/docs`);
+    console.log(HOST);
   });
 }
 

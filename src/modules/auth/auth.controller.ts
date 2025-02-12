@@ -27,7 +27,7 @@ export class AuthController {
 
   @Post("check-token")
   @AuthDecorator()
-  @CanAccess(Role.Admin)
+  // @CanAccess(Role.Admin)
   @ApiConsumes(SwaggerConsumerEnum.UrlEncode, SwaggerConsumerEnum.Json)
   checkToken(@Req() req: Request) {
     return req.user;

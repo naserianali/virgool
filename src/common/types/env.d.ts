@@ -1,6 +1,8 @@
 declare namespace NodeJS {
   interface ProcessEnv {
     PORT: number;
+    HOST: string;
+    HOST_PREFIX: string;
     DB_PORT: number;
     DB_NAME: string;
     DB_USERNAME: string;
@@ -13,7 +15,7 @@ declare namespace NodeJS {
     PHONE_TOKEN_SECRET: string;
     SMS_IR_VERIFY_SEND_URL: string;
     SMS_IR_API_KEY: string;
-    GOOGLE_CLIENT_ID:string;
-    GOOGLE_CLIENT_SECRET:string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
   }
 }
