@@ -17,5 +17,7 @@ declare namespace NodeJS {
     SMS_IR_API_KEY: string;
     GOOGLE_CLIENT_ID: string;
     GOOGLE_CLIENT_SECRET: string;
+    PRODUCTION: boolean;
+    APP_URL: string;
   }
 }

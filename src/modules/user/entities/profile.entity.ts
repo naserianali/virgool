@@ -31,7 +31,7 @@ export class ProfileEntity extends BaseEntity {
     user: UserEntity;
     @AfterLoad()
     map(){
-        this.image_src = `${process.env.HOST_PREFIX}${process.env.HOST}:${process.env.PORT}/${this.image}`.replace(/\\+/g, '/');
-        this.bgImage_src = `${process.env.HOST_PREFIX}${process.env.HOST}:${process.env.PORT}/${this.bgImage}`.replace(/\\+/g, '/');
+        this.image_src = `${process.env.APP_URL}/${this.image}`.replace(/\\+/g, '/');
+        this.bgImage_src = `${process.env.APP_URL}/${this.bgImage}`.replace(/\\+/g, '/');
     }
 }

@@ -1,0 +1,4 @@
+app: instagram
+type: node
+build: npm install --omit=dev && npm rebuild sharp
+start: node dist/main.js

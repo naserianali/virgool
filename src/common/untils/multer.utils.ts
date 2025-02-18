@@ -55,6 +55,7 @@ export function MulterStorage(folderName: string): StorageEngine {
   });
 }
 
+/*
 export async function processImage(file: MulterFile): Promise<Buffer> {
   let buffer: Buffer;
   if (file.buffer) {
@@ -71,5 +72,29 @@ export async function processImage(file: MulterFile): Promise<Buffer> {
       .toBuffer();
   } catch (error) {
     throw new BadRequestException('Failed to process image');
+  }
+}*/
+
+export async function processImage(file: MulterFile): Promise<Buffer> {
+  if (!file) {
+    throw new BadRequestException("Invalid file: No file provided");
+  }
+  let buffer: Buffer;
+
+  if (file.buffer) {
+    buffer = file.buffer;
+  } else if (file.path) {
+    buffer = readFileSync(file.path);
+    unlinkSync(file.path);
+  } else {
+    throw new BadRequestException("Invalid file: No buffer or path available");
+  }
+
+  try {
+    return await sharp(buffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+  } catch (error) {
+    throw new BadRequestException("Failed to process image");
   }
 }

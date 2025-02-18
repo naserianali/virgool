@@ -1,8 +1,13 @@
 {
   "app": "instagram",
   "port": 3000,
+  "platform": "node",
+  "node": {
+    "version": "20"
+  },
   "build": {
-    "location": "iran"
+    "location": "iran",
+    "command": "npm install && npm rebuild sharp"
   },
   "disks": []
 }

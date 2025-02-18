@@ -21,6 +21,6 @@ export class ImageEntity extends BaseEntity {
 
   @AfterLoad()
   map() {
-    this.src = `${process.env.HOST_PREFIX}${process.env.HOST}:${process.env.PORT}/${this.location}`.replace(/\\+/g, '/');
+    this.src = `${process.env.APP_URL}/${this.location}`.replace(/\\+/g, '/');
   }
 }

@@ -55,10 +55,21 @@ export class AuthService {
   }
 
   async sendResponse(res: Response, result: AuthResponse) {
-    res.cookie(CookiesKey.OTP, result.token, {
-      httpOnly: true,
-      expires: new Date(Date.now() + 1000 * 60 * 2),
-    });
+    const {PRODUCTION} = process.env;
+    console.log(PRODUCTION);
+    if (PRODUCTION){
+      res.cookie(CookiesKey.OTP, result.token, {
+        httpOnly: !PRODUCTION,
+        secure: PRODUCTION,
+        sameSite: PRODUCTION ? "none" : "lax",
+        expires: new Date(Date.now() + 1000 * 60 * 2),
+      });
+    }else{
+      res.cookie(CookiesKey.OTP, result.token, {
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 60 * 2),
+      });
+    }
     if (result.method === AuthMethod.Phone) {
       await this.smsIrService.sendVerificationCode(result.username, result.code)
     }
